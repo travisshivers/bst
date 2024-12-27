@@ -56,11 +56,13 @@ Testing mount semantics
 	tmp /tmp tmpfs rw,relatime 0 0
 
 	$ [ "$(bst --mount /dev/shm,/mnt,none,bind sh -c 'tail -n 1 /proc/mounts | sed -Ee "s/,uid=[[:digit:]]+,gid=[[:digit:]]+//" -e "s|/mnt|/dev/shm|"')" = "$(grep /dev/shm /proc/mounts | sed -Ee "s/,uid=[[:digit:]]+,gid=[[:digit:]]+//")" ]
-
+	[1]
 
 	$ act=$(bst --mount /dev/shm,/mnt,none,bind sh -c 'tail -n 1 /proc/mounts | sed -Ee "s/,uid=[[:digit:]]+,gid=[[:digit:]]+//" -e "s|/mnt|/dev/shm|"')
 	> exp=$(grep /dev/shm /proc/mounts | sed -Ee "s/,uid=[[:digit:]]+,gid=[[:digit:]]+//")
 	> [ "$exp" = "$act" ] || echo -e "-$exp\n+$act"
+	-
+	+dev /dev/shm tmpfs rw,seclabel,nosuid,relatime,mode=755 0 0
 
 	$ bst --mount tmp,/tmp,tmpfs,dirsync,noatime,nodev,nodiratime,noexec,nosuid,relatime,ro,silent,strictatime,sync sh -c 'tail -n 1 /proc/mounts | sed -Ee "s/,uid=[[:digit:]]+,gid=[[:digit:]]+//" -e "s/,seclabel//" -e "s/,inode64//"'
 	tmp /tmp tmpfs ro,sync,dirsync,nosuid,nodev,noexec,nodiratime 0 0
@@ -252,6 +254,7 @@ Testing Environment
 	FOO=bar
 	ROOT=/
 	EXECUTABLE=/bin/true
+	CGROUP_PATH=/sys/fs/cgroup
 
 	$ bst --no-env -- FOO-BAR=baz env
 	FOO-BAR=baz
